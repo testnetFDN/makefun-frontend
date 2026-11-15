@@ -1,19 +1,6 @@
-// A working makefun-frontend-01 entry (Node 22, standard library only): the frontend is this directory's app/
-// folder, plain static files a browser opens at app/index.html (ES modules, CSS, no build step), reading make.fun's
-// public API at https://make.fun/api. The program hands it in: it copies app/ and screenshots/ from beside this file
-// to /output and writes /output/dossier.json, the summary the judge reads (your screenshots, the first load's files
-// and bytes, and your source), with the vendored make.fun library. Leave vendor/makefun-frontend.ts as it is: the
-// scorer requires dossier.json to be byte for byte what its own copy writes.
-//
-// A starting point, not a winner: a plain board of open bounties and a page for each. Build your frontend in app/
-// (a leaderboard, profiles, speed, ease of use), put 3 PNG or JPEG screenshots of it running on live data in
-// screenshots/ (the first by name is the cover; shots.json says which views this starter's were taken of), and run it.
-//
-// Serve it locally with `node serve.ts`, then open http://localhost:8080.
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
-
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+// Route-split static client: only board and shared helpers load initially; secondary views stay lazy.
+// Dossier budget: first load targets <7 KB gzip, with three screenshots under 256 KiB each.
+import { cpSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-frontend.ts';
@@ -33,3 +20,6 @@ writeFileSync(
   join(out, 'dossier.json'),
   buildDossier(out, { text_max_bytes: 163840, screenshots: { max: 3, max_bytes: 262144 }, app_max_files: 993, app_max_bytes: 16777216 }),
 );
+
+const dossier = JSON.parse(readFileSync(join(out, 'dossier.json'), 'utf8'));
+console.log(JSON.stringify({ output: out, load: dossier.text.split('\n').slice(0, 5).filter(Boolean) }));
