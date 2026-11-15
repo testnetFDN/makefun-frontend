@@ -11,7 +11,7 @@ export function card(b) {
   const status = b.status || (new Date(b.deadline) > Date.now() ? 'open' : 'resolved');
   const sponsor = typeof b.sponsor === 'object' ? b.sponsor : { name: b.sponsor };
   return h('article', { class: 'bounty-card' },
-    h('div', { class: 'card-top' }, h('span', { class: `pill ${status}` }, status),
+    h('div', { class: 'card-top', 'aria-label': `${status} bounty` }, h('span', { class: `pill ${status}` }, status),
       h('span', { class: 'category' }, b.category || 'Bounty'), countdown(b.deadline)),
     h('p', { class: 'sponsor' }, `${sponsor?.name || 'make.fun'} ${sponsor?.isVerified ? '✓' : ''}`),
     h('h2', {}, link(b.title, `#/bounty/${b.slug}`)),

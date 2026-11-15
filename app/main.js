@@ -19,6 +19,7 @@ async function render() {
   let path = '/competitions?limit=50';
   let view = board;
   content.setAttribute('aria-busy', 'true');
+  content.setAttribute('aria-live', 'polite');
   content.replaceChildren(h('p', { class: 'loading' }, 'Loading live opportunities…'));
   try {
     if (parts[0] === 'bounty') {
