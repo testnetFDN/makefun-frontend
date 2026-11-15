@@ -15,7 +15,7 @@ export default function bounty(b) {
   const rewardPanel = h('aside', { class: 'panel' },
     h('h2', {}, 'Live rewards'),
     h('p', { class: 'muted' }, 'Base rewards + your share of the fee pot.'),
-    h('div', { class: 'table-wrap' }, h('table', {},
+    h('div', { class: 'table-wrap' }, h('table', { class: 'compact' },
       h('thead', {}, h('tr', {}, ['Place', 'Base', 'Fees', 'Live'].map(label => h('th', {}, label)))),
       h('tbody', {}, rewardRows))));
   const heading = h('div', { class: 'page-head' },

@@ -76,6 +76,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 48px 20px 70px; min-height: c
 .phase-strip small { color: var(--muted); font-size: 11px; }
 .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 8px; margin-top: 20px; }
 table { width: 100%; border-collapse: collapse; min-width: 760px; }
+table.compact { min-width: 0; }
+table.compact th, table.compact td { padding: 9px 8px; white-space: nowrap; }
 th, td { text-align: left; padding: 13px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
 th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .person { display: flex; align-items: center; gap: 8px; }

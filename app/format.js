@@ -37,9 +37,16 @@ setInterval(() => {
 export function avatar(image, name = '?') {
   const box = h('span', { class: 'avatar', 'aria-label': name }, name.substring(0, 2).toUpperCase());
   if (image) {
-    const url = new URL(image, 'https://make.fun');
-    if (url.origin === 'https://make.fun') {
-      const img = h('img', { src: url.href, crossorigin: 'anonymous', alt: '', loading: 'lazy' });
+    let url;
+    try {
+      url = new URL(image, 'https://make.fun');
+    } catch {
+      return box;
+    }
+    if (url.protocol === 'https:') {
+      const img = h('img', { src: url.href,
+        crossorigin: url.origin === 'https://make.fun' ? 'anonymous' : null,
+        alt: '', loading: 'lazy' });
       img.addEventListener('error', () => img.remove());
       box.append(img);
     }

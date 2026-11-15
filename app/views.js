@@ -30,7 +30,8 @@ export function board(data) {
   let query = '';
   let sort = 'pot';
   const open = items.filter(b => (b.status || 'open') === 'open');
-  const nearest = [...open].sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0];
+  const nearest = open.filter(b => new Date(b.deadline) > Date.now())
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0];
   const grid = h('div', { class: 'grid' });
   const count = h('span', { class: 'result-count' });
   function draw() {
@@ -68,7 +69,7 @@ export function board(data) {
       h('div', { class: 'hero-note' }, h('span', { class: 'live' }, '● MARKET IS LIVE'), h('p', {}, 'Your next idea', h('br'), 'starts here. ↙'))),
     h('div', { class: 'telemetry' }, stat('Open bounties', open.length, 'Ready for your best work'),
       stat('Combined live pot', money(open.reduce((n, b) => n + Number(b.potUsd ?? b.rewardAmount), 0)), 'Base rewards + entry fees'),
-      stat('Total submissions', items.reduce((n, b) => n + Number(b.submissionCount || 0), 0), 'Builders making their mark'),
+      stat('Total submissions', items.reduce((n, b) => n + Number(b.submissionCount || 0), 0).toLocaleString('en-US'), 'Builders making their mark'),
       stat('Shortest active deadline', nearest ? countdown(nearest.deadline) : '—', 'Every second counts')),
     h('div', { class: 'section-title' }, h('h2', {}, 'The bounty board'), count),
     h('div', { class: 'toolbar' }, pills(['all', 'open', 'resolved'], value => { status = value; }), search, select),
