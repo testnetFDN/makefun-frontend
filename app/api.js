@@ -1,1 +1,15 @@
-const API='https://make.fun/api',mem=new Map(),pending=new Map();let controller;export const begin=()=>{controller?.abort();controller=new AbortController();pending.clear()};export async function get(path,onUpdate){const key='mf:'+path;let old=mem.get(path);try{old||=JSON.parse(sessionStorage.getItem(key)||'null')}catch{}if(!pending.has(path)){const signal=controller?.signal;const p=(async()=>{const r=await fetch(API+path,{headers:old?.etag?{'If-None-Match':old.etag}:{},signal});if(r.status===304)return old.data;if(!r.ok)throw Error('API '+r.status);const data=await r.json(),x={data,etag:r.headers.get('etag')||''};mem.set(path,x);while(mem.size>12)mem.delete(mem.keys().next().value);try{const keys=Object.keys(sessionStorage).filter(k=>k.startsWith('mf:'));while(keys.length>=12)sessionStorage.removeItem(keys.shift());const json=JSON.stringify(x);if(json.length<300000)sessionStorage.setItem(key,json)}catch{}return data})().finally(()=>pending.delete(path));pending.set(path,p)}const p=pending.get(path);if(old?.data){p.then(data=>onUpdate?.(data)).catch(()=>{});return old.data}return p}export const getBounties=cb=>get('/competitions?limit=50',cb),getBounty=s=>get('/competitions/'+encodeURIComponent(s)),getLeaderboard=s=>get('/competitions/'+encodeURIComponent(s)+'/leaderboard'),getProfile=s=>get('/profiles/'+encodeURIComponent(s));
+// make.fun's public API: read-only GET requests, open to any origin (CORS).
+// The full API is described at https://make.fun/api/openapi.json.
+
+const API = 'https://make.fun/api';
+
+async function get(path) {
+  const res = await fetch(API + path);
+  return res.json();
+}
+
+/** The open bounties: { items: [...] } (activity=times leaves out the activity a board does not show). */
+export const getBounties = () => get('/competitions?status=open&activity=times');
+
+/** One bounty, by its slug. */
+export const getBounty = (slug) => get(`/competitions/${encodeURIComponent(slug)}`);

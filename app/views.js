@@ -1,3 +1,40 @@
-import{h,money,left,reconcileChildren}from'./format.js';const A=(t,u,c)=>h('a',{href:u,class:c,text:t}),pill=(t,c='pill')=>h('span',{class:c,text:t});export function shell(){return h('header',{},A('make.fun / studio','#/','brand'),h('nav',{},A('Board','#/'),A('Frontend bounty','#/bounty/makefun-frontend-01'),A('Leaderboard','#/bounty/makefun-frontend-01/leaderboard')),h('form',{class:'jumper',onsubmit:e=>{e.preventDefault();location.hash='#/u/'+encodeURIComponent(e.target.elements.h.value.trim().replace(/^@/,'')||'testnetfdn')}},h('span',{text:'@'}),h('input',{name:'h',placeholder:'testnetfdn'}),h('button',{text:'Go'})),pill('● API live','status'))}const layout=(t,...x)=>h('main',{},h('div',{class:'eyebrow',text:'MAKE.FUN / PUBLIC NETWORK'}),h('h1',{text:t}),...x);export function board(d){const a=d.items||[],grid=h('div',{class:'grid'});let status='All',category='All',query='',sort='Live Pot',timer;const count=h('span',{class:'resultcount'});const card=b=>h('article',{class:'card'},h('div',{class:'cardtop'},pill(b.status||'open','badge '+(b.status==='resolved'?'closed':'')),pill(b.category||'Bounty'),h('span',{class:'verified',text:(b.sponsor?.name||'make.fun')+(b.sponsor?.isVerified?' ✓':'')})),h('h2',{},A(b.title,'#/bounty/'+b.slug)),h('p',{class:'summary',text:b.summary||b.description?.slice(0,155)||'Open competition'}),h('div',{class:'metrics'},...[[money(b.rewardAmount),'Base reward'],[money(b.potUsd??b.rewardAmount),'Live pot',b.entryFeesUsd?'+'+money(b.entryFeesUsd)+' fees':'Base + fee pool'],[b.entryFeeUsd?money(b.entryFeeUsd):'Free','Entry fee'],[String(b.submissionCount||0),'Entries',(b.entryFeePayers||0)+' payers']].map((x,i)=>h('div',{class:i===1?'money':''},h('small',{text:x[1]}),h('strong',{text:x[0]}),x[2]?h('span',{class:'boost',text:x[2]}):''))),h('div',{class:'skills'},...(b.skills||[]).slice(0,4).map(t=>pill(t))),h('div',{class:'cardfoot'},h('span',{class:'countdown','data-deadline':b.deadline,text:left(b.deadline)}),A('Overview →','#/bounty/'+b.slug),A('Leaderboard','#/bounty/'+b.slug+'/leaderboard')));
-function paint(){const filtered=a.filter(b=>(status==='All'||b.status?.toLowerCase()===status.toLowerCase())&&(category==='All'||b.category===category)&&(b.title+' '+b.summary+' '+b.skills).toLowerCase().includes(query));const value=b=>sort==='Base Reward'?Number(b.rewardAmount||0):sort==='Most Entries'?Number(b.submissionCount||0):sort==='Soonest Deadline'?-new Date(b.deadline):Number(b.potUsd??b.rewardAmount??0);filtered.sort((a,b)=>value(b)-value(a));reconcileChildren(grid,filtered,b=>b.slug,card);count.textContent=filtered.length+' competitions';if(!filtered.length)grid.append(h('p',{class:'empty',text:'No bounties match. Try another filter.'}))}
-const group=(labels,change)=>{const n=h('div',{class:'pills'});labels.forEach((t,i)=>n.append(h('button',{class:'filter'+(!i?' selected':''),text:t,onclick:e=>{n.querySelectorAll('button').forEach(b=>b.classList.toggle('selected',b===e.currentTarget));change(t);paint()}})));return n};const filter=h('section',{class:'filterpanel'},h('div',{class:'filterrow'},group(['All','Open','Resolved'],x=>status=x),h('input',{placeholder:'Search title, skill, or keyword',type:'search',oninput:e=>{clearTimeout(timer);const q=e.target.value;timer=setTimeout(()=>{query=q.toLowerCase();paint()},160)}}),h('select',{'aria-label':'Sort bounties',onchange:e=>{sort=e.target.value;paint()}},...['Live Pot','Base Reward','Soonest Deadline','Most Entries'].map(t=>h('option',{text:t})))),h('div',{class:'filterrow'},group(['All',...[...new Set(a.map(x=>x.category).filter(Boolean))]],x=>category=x),count));const active=a.filter(b=>b.status==='open'),deadline=active.filter(b=>new Date(b.deadline)>Date.now()).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline))[0]?.deadline;const stats=h('section',{class:'telemetry'},...[[active.length,'Open bounties','Live opportunities'],[money(a.reduce((n,x)=>n+Number(x.potUsd??x.rewardAmount??0),0)),'Combined live pot','Base rewards + entry fees'],[a.reduce((n,x)=>n+Number(x.submissionCount||0),0),'Total submissions','Builders shipping in public'],[deadline?left(deadline):'No deadline','Shortest active deadline','Next competition close']].map((x,i)=>h('div',{},h('span',{text:x[1]}),h('strong',i===3&&deadline?{'data-deadline':deadline,text:x[0]}:{text:x[0]}),h('small',{text:x[2]}))));paint();return layout('Find your next build.',h('div',{class:'boardintro'},h('p',{class:'lede',text:'Discover live bounties. Ship your best work. Compete for a growing reward pool.'}),pill('● Live bounty board','livemark')),stats,filter,grid)}
+// The two pages, each a function from API data to HTML.
+
+import { date, esc, money, timeLeft } from './format.js';
+
+/** The reward as it stands now: the prize plus any entry fees paid into it. */
+const pot = (b) => money(b.potUsd ?? b.rewardAmount);
+
+/** The entry fee, when the bounty charges one. */
+const fee = (b) => (b.entryFeeUsd ? `${money(b.entryFeeUsd)} entry fee` : '');
+
+export function board(data) {
+  const rows = data.items
+    .map(
+      (b) => `
+      <li>
+        <a href="#/bounty/${encodeURIComponent(b.slug)}">${esc(b.title)}</a>
+        <span>${pot(b)}</span>
+        <span>${fee(b)}</span>
+        <span>${timeLeft(b.deadline)}</span>
+        <span>${b.submissionCount} ${b.submissionCount === 1 ? 'entry' : 'entries'}</span>
+      </li>`,
+    )
+    .join('');
+  return `<h1>Open bounties</h1><ul class="board">${rows}</ul>`;
+}
+
+export function bounty(b) {
+  return `
+    <p><a href="#/">All bounties</a></p>
+    <h1>${esc(b.title)}</h1>
+    <p>${esc(b.summary)}</p>
+    <dl>
+      <dt>Reward</dt><dd>${pot(b)}</dd>
+      ${b.entryFeeUsd ? `<dt>Entry fee</dt><dd>${money(b.entryFeeUsd)}</dd>` : ''}
+      <dt>Deadline</dt><dd>${date(b.deadline)} (${timeLeft(b.deadline)})</dd>
+      <dt>Entries</dt><dd>${b.submissionCount}</dd>
+    </dl>
+    <h2>Description</h2>
+    <div class="description">${esc(b.description)}</div>`;
+}

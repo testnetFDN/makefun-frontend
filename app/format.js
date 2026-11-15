@@ -1,3 +1,29 @@
-export const h=(tag,a={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(a)){if(k==='class')n.className=v;else if(k==='text')n.textContent=v;else if(k.startsWith('on'))n.addEventListener(k.slice(2).toLowerCase(),v);else if(v!=null)n.setAttribute(k,v)}kids.flat(Infinity).forEach(x=>n.append(x?.nodeType?x:document.createTextNode(String(x??''))));return n};
-export const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:Number(v)%1?2:0}).format(Number(v)||0),date=v=>v?new Date(v).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}):'—',left=v=>{let n=new Date(v)-Date.now();if(n<=0)return'ended';let d=Math.floor(n/864e5),h=Math.floor(n%864e5/36e5),m=Math.floor(n%36e5/6e4);return d?`${d}d ${h}h left`:h?`${h}h ${m}m left`:`${m}m left`};
-export function reconcileChildren(parent,items,key,render){const old=new Map([...parent.children].map(n=>[n.dataset.key,n]));for(const item of items){const k=String(key(item)),n=old.get(k)||render(item);n.dataset.key=k;parent.append(n);old.delete(k)}old.forEach(n=>n.remove())}
+// Small helpers for showing API values.
+
+/** Text made safe to put inside HTML. */
+export function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+/** A dollar amount ('1000.00' or 0.5) as '$1,000' or '$0.50'. */
+export function money(value) {
+  const n = Number(value);
+  return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: Number.isInteger(n) ? 0 : 2 });
+}
+
+/** A deadline as a date in UTC. */
+export function date(iso) {
+  return `${new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })} UTC`;
+}
+
+/** The time until a deadline: '2d 4h left', '35m left', or 'ended'. */
+export function timeLeft(iso) {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return 'ended';
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const minutes = Math.floor((ms % 3600000) / 60000);
+  if (days > 0) return `${days}d ${hours}h left`;
+  if (hours > 0) return `${hours}h ${minutes}m left`;
+  return `${minutes}m left`;
+}
