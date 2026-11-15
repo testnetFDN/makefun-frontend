@@ -3,12 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>make.fun bounties</title>
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<title>make.fun — live bounty board</title>
 <link rel="stylesheet" href="style.css">
 <script type="module" src="main.js"></script>
 </head>
 <body>
-<header><a href="#/">make.fun bounties</a></header>
-<main id="app"></main>
+<header class="top">
+  <a class="brand" href="#/">make<b>.fun</b></a>
+  <nav>
+    <a href="#/">Board</a>
+    <a href="#/rankings">Rankings</a>
+  </nav>
+  <span id="clock" class="clock"></span>
+</header>
+<main id="app"><noscript>JavaScript is required.</noscript></main>
+<footer class="foot">
+  <span>read-only · public API · <a href="https://make.fun" target="_blank" rel="noopener">make.fun</a></span>
+</footer>
 </body>
 </html>
